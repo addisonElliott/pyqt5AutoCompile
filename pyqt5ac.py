@@ -2,14 +2,68 @@ import glob
 import json
 import os
 import shlex
-import subprocess
 import sys
+import tempfile
+from io import StringIO
 
+import PyQt5.pyrcc_main
+import PyQt5.uic
 import click
 import yaml
-import platform
 
 __version__ = '1.0.2'
+
+
+# @contextmanager
+# def capture(source=sys.stdout, destination=os.devnull):
+#     sourceFileNo = source.fileno()
+#     destinationFileNo = destination.fileno()
+#
+#     oldSource = os.dup(sourceFileNo)
+#     source.flush()
+#     os.dup2(destinationFileNo, source.fileno())
+#
+#     try:
+#         yield
+#     finally:
+#         os.dup2(oldSource, source.fileno())
+#         pass
+
+# with os.fdopen(os.dup(sourceFileNo), 'wb') as copied:
+#     source.flush()
+#
+#     try:
+#         os.dup2(destinationFileNo, source.fileno())
+#     except ValueError:
+#         with open(destination, 'wb') as fh:
+#             os.dup2(fh.fileno(), sourceFileNo)
+#
+#     try:
+#         yield
+#     finally:
+#         source.flush()
+#         destination.flush()
+#         print('sss')
+#         os.dup2(copied.fileno(), source.fileno())
+#         pass
+
+# stdout_fd = fileno(stdout)
+# # copy stdout_fd before it is overwritten
+# #NOTE: `copied` is inheritable on Windows when duplicating a standard stream
+# with os.fdopen(os.dup(stdout_fd), 'wb') as copied:
+#     stdout.flush()  # flush library buffers that dup2 knows nothing about
+#     try:
+#         os.dup2(fileno(to), stdout_fd)  # $ exec >&to
+#     except ValueError:  # filename
+#         with open(to, 'wb') as to_file:
+#             os.dup2(to_file.fileno(), stdout_fd)  # $ exec > to
+#     try:
+#         yield stdout # allow code to be run with the redirected stdout
+#     finally:
+#         # restore stdout to its previous value
+#         #NOTE: dup2 makes stdout_fd inheritable unconditionally
+#         stdout.flush()
+#         os.dup2(copied.fileno(), stdout_fd)  # $ exec >&copied
 
 
 # Takes command, options, source and destination folders and creates a command from it
@@ -72,7 +126,7 @@ def _isOutdated(src, dst, isQRCFile):
 @click.option('--force', default=False, is_flag=True, help='Compile all files regardless of last modification time')
 @click.argument('iopaths', nargs=-1, required=False)
 @click.version_option(__version__)
-def cli(rccPath, rccOptions, uicPath, uicOptions, force, config, iopaths=()):
+def cli(rccOptions, uicOptions, force, config, iopaths=()):
     """Compile PyQt5 UI/QRC files into Python
 
     IOPATHS argument is a space delineated pair of glob expressions that specify the source files to compile as the
@@ -120,10 +174,10 @@ def cli(rccPath, rccOptions, uicPath, uicOptions, force, config, iopaths=()):
     # second column the destination file expression.
     ioPaths = list(zip(iopaths[::2], iopaths[1::2]))
 
-    main(rccPath, rccOptions, uicPath, uicOptions, force, config, ioPaths)
+    main(rccOptions, uicOptions, force, config, ioPaths)
 
 
-def main(rccPath='pyrcc5', rccOptions='', uicPath='pyuic5', uicOptions='', force=False, config='', ioPaths=()):
+def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
     if config:
         with open(config, 'r') as fh:
             if config.endswith('.yml'):
@@ -135,9 +189,7 @@ def main(rccPath='pyrcc5', rccOptions='', uicPath='pyuic5', uicOptions='', force
 
             # configData variable is a dictionary where the keys are the names of the configuration
             # Load the keys and use the default value if nothing is specified
-            rccPath = configData.get('rcc', rccPath)
             rccOptions = configData.get('rcc_options', rccOptions)
-            uicPath = configData.get('uic', uicPath)
             uicOptions = configData.get('uic_options', uicOptions)
             force = configData.get('force', force)
             ioPaths = configData.get('ioPaths', ioPaths)
@@ -176,11 +228,9 @@ def main(rccPath='pyrcc5', rccOptions='', uicPath='pyuic5', uicOptions='', force
 
             if ext == '.ui':
                 isQRCFile = False
-                command = uicPath
                 options = uicOptions
             elif ext == '.qrc':
                 isQRCFile = True
-                command = rccPath
                 options = rccOptions
             else:
                 click.secho('Unknown target %s found' % sourceFilename, fg='yellow')
@@ -191,31 +241,84 @@ def main(rccPath='pyrcc5', rccOptions='', uicPath='pyuic5', uicOptions='', force
 
             # If we are force compiling everything or the source file is outdated, then compile, otherwise skip!
             if force or _isOutdated(sourceFilename, destFilename, isQRCFile):
-                # Builds command string to be run in terminal
-                commandString = _buildCommand(command, options, sourceFilename, destFilename)
+                if isQRCFile:
+                    # old_stderr = sys.stderr
+                    # sys.stderr = mystdout = StringIO()
 
-                # Let's try to run the command now!
-                try:
-                    # On Windows, shell must be set to True to search through the PATH environment variable when
-                    # searching for a program. See here:
-                    # https://stackoverflow.com/questions/3022013/windows-cant-find-the-file-on-subprocess-call
-                    subprocess.check_call(commandString, shell=(platform.system() == 'Windows'))
-                except subprocess.CalledProcessError as e:
-                    if e.output:
-                        click.secho(commandString, fg='yellow')
-                        click.secho(e.output.decode(sys.stdout.encoding), fg='red')
-                    else:
-                        click.secho(commandString, fg='red')
-                except OSError as e:
-                    click.secho(commandString, fg='yellow')
-                    click.secho(str(e), fg='red')
+                    # TODO Pull from stderr the value and do stuff
+                    # with tempfile.TemporaryFile() as fp:
+                    # with open('C:/Users/adellio/Desktop/test.txt', 'w') as fp:
+                        # with capture(sys.stderr, fp):
+                        fp = open('C:/Users/adellio/Desktop/test.txt', 'w')
+
+                        sys.stderr.write('testingdddd11\n')
+                        print('xxx', sys.stderr.fileno())
+
+                        old_stderr = os.dup(sys.stderr.fileno())
+
+                        print(old_stderr)
+
+                        # sys.stderr.flush()
+
+                        print(fp.fileno())
+
+                        print(os.dup2(fp.fileno(), sys.stderr.fileno()))
+                        prev = sys.stderr
+                        sys.stderr = os.fdopen(fp.fileno(), 'w')
+
+                        print(fp.fileno(), sys.stderr.fileno(), old_stderr)
+
+                        # result = PyQt5.pyrcc_main.processResourceFile([sourceFilename], destFilename, False)
+                        sys.stderr.write('test\n')
+                        fp.write('dkdkdk')
+
+                        # fp.flush()
+                        # fp.close()
+                        # sys.stderr.flush()
+                        # os.dup2(sys.stderr.fileno(), old_stderr)
+                        print(os.dup2(old_stderr, sys.stderr.fileno()))
+                        sys.stderr = prev
+                        os.close(old_stderr)
+
+                        print(sys.stderr.fileno(), old_stderr)
+
+                        # raise ValueError('testing')
+                        print('ok')
+                        sys.stderr.write('testingdddd\n')
+                        print('ok2')
+
+                # print(result)
+
+                    # sys.stderr = old_stderr
+                    # print('Value extracted: ', mystdout.getvalue())
+
+                    # # examine mystdout.getvalue()
+
+                    # TODO Setup globals already
                 else:
-                    click.secho(commandString, fg='green')
+                    # TODO Pass options here
+                    # TODO Handle errors here
+                    with open(destFilename, 'w') as fh:
+                        PyQt5.uic.compileUi(sourceFilename, fh)
+
+                    # TODO Do try/catch for this because it will throw errors for issues
+
+                #     if e.output:
+                #         click.secho(commandString, fg='yellow')
+                #         click.secho(e.output.decode(sys.stdout.encoding), fg='red')
+                #     else:
+                #         click.secho(commandString, fg='red')
+                # except OSError as e:
+                #     click.secho(commandString, fg='yellow')
+                #     click.secho(str(e), fg='red')
+                # else:
+                #     click.secho(commandString, fg='green')
             else:
                 click.secho('Skipping %s, up to date' % filename)
 
         if not foundItem:
             click.secho('No items found in %s' % sourceFileExpr)
+
 
 if __name__ == '__main__':
     cli()
