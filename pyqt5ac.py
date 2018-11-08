@@ -77,7 +77,7 @@ def cli(rccPath, rccOptions, uicPath, uicOptions, force, config, iopaths=()):
 
     IOPATHS argument is a space delineated pair of glob expressions that specify the source files to compile as the
     first item in the pair and the path of the output compiled file for the second item. Multiple pairs of source and
-    destination paths are allowed in IOPAIRS.
+    destination paths are allowed in IOPATHS.
 
     \b
     The destination path argument supports variables that are replaced based on the
