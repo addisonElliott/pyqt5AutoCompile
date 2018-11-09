@@ -66,9 +66,9 @@ The following snippet of code below demonstrates how to call pyqt5ac from your P
 import pyqt5ac
 
 if debug:
-    pyqt5ac.main(rccPath='pyrcc5', rccOptions='', uicPath='pyuic5', uicOptions='--from-imports', force=False, 
-                 config='', ioPaths=[['gui/*.ui', 'generated/%%FILENAME%%_ui.py'], 
-                                     ['resources/*.qrc', 'generated/%%FILENAME%%_rc.py']])
+    pyqt5ac.main(rccOptions='', uicOptions='--from-imports', force=False, config='',
+                 ioPaths=[['gui/*.ui', 'generated/%%FILENAME%%_ui.py'],
+                          ['resources/*.qrc', 'generated/%%FILENAME%%_rc.py']])
 ```
 
 Configuration Options
@@ -76,9 +76,7 @@ Configuration Options
 All of the options that can be specified to pyqt5ac can also be placed in a configuration file (JSON or YAML). My recommendation is to use a configuration file to allow easy compilation of your software. For testing purposes, I would use the options in the command line interface to make get everything working and then transcribe that into a configuration file for repeated use.
 
 Whether running via the command line or from a script, the arguments and options that can be given are the same. The valid options are:
-* **rccPath** - Path to the resource compiler. Default is pyrcc5 and assumes pyrcc5 is in the user's PATH variable. If specified, the default value will be the environment variable PYQT5AC_RCC.
 * **rccOptions** - Additional options to pass to the resource compiler. See the man page of pyrcc5 for more information on options. An example of a valid option would be "-compress 1". Default is to pass no options.
-* **uicPath** - Path to the resource compiler. Default is pyuic5 and assumes pyuic5 is in the user's PATH variable. If specified, the default value will be the environment variable PYQT5AC_UIC.
 * **uicOptions** - Additional options to pass to the UI compiler. See the man page of pyuic5 for more information on options. An example of a valid option would be '--from-imports'. Default is to pass no options.
 * **force** - Specifies whether to force compile all of the files found. The default is false meaning only outdated files will be compiled.
 * **config** - JSON or YAML configuration file that contains information about these parameters.
@@ -133,8 +131,6 @@ ioPaths:
     - "modules/*/resources/*.qrc"
     - "%%DIRNAME%%/generated/%%FILENAME%%_rc.py"
 
-rcc: /usr/bin/pyrcc5
-uic: /usr/bin/pyuic5
 uic_options: --from-imports
 force: False
 ```
@@ -161,9 +157,7 @@ Option 2: JSON Config File (Recommended)
     ["modules/*/*.ui", "%%DIRNAME%%/generated/%%FILENAME%%_ui.py"],
     ["modules/*/resources/*.qrc", "%%DIRNAME%%/generated/%%FILENAME%%_rc.py"]
   ],
-  "rcc": "/usr/bin/pyrcc5",
   "rcc_options": "",
-  "uic": "/usr/bin/pyuic5",
   "uic_options": "--from-imports",
   "force": false
 }
@@ -186,7 +180,7 @@ Option 3: Python Script
 ```python
 import pyqt5ac
 
-pyqt5ac.main(rccPath='/usr/bin/pyrcc5', uicPath='/usr/bin/pyuic5', uicOptions='--from-imports', force=False, ioPaths=[
+pyqt5ac.main(uicOptions='--from-imports', force=False, ioPaths=[
         ['gui/*.ui', 'generated/%%FILENAME%%_ui.py'],
         ['resources/*.qrc', 'generated/%%FILENAME%%_rc.py'],
         ['modules/*/*.ui', '%%DIRNAME%%/generated/%%FILENAME%%_ui.py'],
@@ -197,7 +191,7 @@ pyqt5ac.main(rccPath='/usr/bin/pyrcc5', uicPath='/usr/bin/pyuic5', uicOptions='-
 Option 4: Command Line
 ----------------------
 ```bash
-pyqt5ac --rcc /usr/bin/pyrcc5 --uic /usr/bin/pyuic5 --uic_options "--from-imports" gui/*.ui generated/%%FILENAME%%_ui.py resources/*.qrc generated/%%FILENAME%%_rc.py modules/*/*.ui %%DIRNAME%%/generated/%%FILENAME%%_ui.py modules/*/resources/*.qrc %%DIRNAME%%/generated/%%FILENAME%%_rc.py
+pyqt5ac --uic_options "--from-imports" gui/*.ui generated/%%FILENAME%%_ui.py resources/*.qrc generated/%%FILENAME%%_rc.py modules/*/*.ui %%DIRNAME%%/generated/%%FILENAME%%_ui.py modules/*/resources/*.qrc %%DIRNAME%%/generated/%%FILENAME%%_rc.py
 ```
 
 Resulting File Structure

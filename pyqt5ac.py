@@ -5,8 +5,6 @@ import shlex
 import subprocess
 import sys
 
-import PyQt5.pyrcc_main
-import PyQt5.uic
 import click
 import yaml
 
@@ -218,3 +216,7 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
 
 if __name__ == '__main__':
     cli()
+
+    pyqt5ac.main(rccOptions='', uicOptions='--from-imports', force=False, config='',
+                 ioPaths=[['gui/*.ui', 'generated/%%FILENAME%%_ui.py'],
+                          ['resources/*.qrc', 'generated/%%FILENAME%%_rc.py']])
