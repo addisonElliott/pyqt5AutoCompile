@@ -212,8 +212,8 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
             else:
                 click.secho('Skipping %s, up to date' % filename)
 
-    if not foundItem:
-        click.secho('No items found in %s' % sourceFileExpr)
+        if not foundItem:
+            click.secho('No items found in %s' % sourceFileExpr)
 
 
 if __name__ == '__main__':
