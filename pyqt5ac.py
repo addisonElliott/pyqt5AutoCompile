@@ -13,24 +13,27 @@ import yaml
 __version__ = '1.0.2'
 
 
-# Takes command, options, source and destination folders and creates a command from it
-# Escapes the src/dst and removes any additional whitespace
-def _buildCommand(command, options, sourceFilename, destFilename):
-    """Build PyQt5 command line string based on the command, options and arguments
+# Takes information about command and creates an argument list from it
+# In addition to an argument list, a 'cleaner' string is returned to be shown to the user
+# This essentially replaces 'python -m XXX' with the command parameter
+def _buildCommand(module, command, options, sourceFilename, destFilename):
+    # Split options string into a list of options that is space-delineated
+    # shlex.split is used rather than str.split to follow common shell rules such as strings in quotes are considered
+    # one argument, even with spaces
+    optionsList = shlex.split(options)
 
-    String follows the syntax:
-        <command> <options> -o destFilename sourceFilename
-    """
+    # List of arguments with the first argument being the command to run
+    # This is the argument list that will be actually ran by using sys.executable to get the current Python executable
+    # running this program.
+    argList = [sys.executable, '-m', module] + optionsList + ['-o', destFilename, sourceFilename]
 
-    # Construct command string
-    commandString = '%s %s -o %s %s' % (
-        shlex.quote(command), options, shlex.quote(destFilename), shlex.quote(sourceFilename))
+    # However, for showing the user what command was ran, we will replace the 'python -m XXX' with pyuic5 or pyrcc5 to
+    # make it look cleaner
+    # Create one command string by escaping each argument and joining together with spaces
+    cleanArgList = [command] + argList[3:]
+    commandString = ' '.join([shlex.quote(arg) for arg in cleanArgList])
 
-    # Split command string by spaces
-    args = shlex.split(commandString)
-
-    # Remove any blank arguments meaning there were double spaces in the command string and then rejoin the args
-    return ' '.join([arg for arg in args if arg])
+    return argList, commandString
 
 
 def _isOutdated(src, dst, isQRCFile):
@@ -175,11 +178,13 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
 
             if ext == '.ui':
                 isQRCFile = False
-                cmd = 'PyQt5.uic.pyuic'
+                module = 'PyQt5.uic.pyuic'
+                command = 'pyuic5'
                 options = uicOptions
             elif ext == '.qrc':
                 isQRCFile = True
-                cmd = 'PyQt5.pyrcc_main'
+                module = 'PyQt5.pyrcc_main'
+                command = 'pyrcc5'
                 options = rccOptions
             else:
                 click.secho('Unknown target %s found' % sourceFilename, fg='yellow')
@@ -190,57 +195,25 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
 
             # If we are force compiling everything or the source file is outdated, then compile, otherwise skip!
             if force or _isOutdated(sourceFilename, destFilename, isQRCFile):
-                if isQRCFile:
-                    # TODO Add options
-                    result = subprocess.run([sys.executable, '-m', 'PyQt5.pyrcc_main', '-o', destFilename, sourceFilename], capture_output=True)
+                argList, commandString = _buildCommand(module, command, options, sourceFilename, destFilename)
 
-                    if result.returncode:
-                        if result.stderr:
-                            pass
-                        else:
-                            pass
-                    else:
-                        click.secho('Success!', fg='green')
+                commandResult = subprocess.run(argList, capture_output=True)
 
-                        # if e.output:
-                        #     # click.secho(commandString, fg='yellow')
-                        #     click.secho(e.output.decode(sys.stdout.encoding), fg='red')
-                        # else:
-                        #     pass
-                        #     # click.secho(commandString, fg='red')
-                    # except OSError as e:
-                    #     # click.secho(commandString, fg='yellow')
-                    #     click.secho(str(e), fg='red')
-                    # else:
-                    #     pass
-                    #     # click.secho(commandString, fg='green')
-
-                    pass
-                    # PyQt5.pyrcc_main.processResourceFile([sourceFilename], destFilename, False)
-                    # TODO Setup globals already
+                if commandResult.returncode == 0:
+                    click.secho(commandString, fg='green')
                 else:
-                    # TODO Pass options here
-                    # TODO Handle errors here
-                    with open(destFilename, 'w') as fh:
-                        PyQt5.uic.compileUi(sourceFilename, fh)
-
-                    # TODO Do try/catch for this because it will throw errors for issues
-
-                #     if e.output:
-                #         click.secho(commandString, fg='yellow')
-                #         click.secho(e.output.decode(sys.stdout.encoding), fg='red')
-                #     else:
-                #         click.secho(commandString, fg='red')
-                # except OSError as e:
-                #     click.secho(commandString, fg='yellow')
-                #     click.secho(str(e), fg='red')
-                # else:
-                #     click.secho(commandString, fg='green')
+                    if commandResult.stderr:
+                        click.secho(commandString, fg='yellow')
+                        click.secho(commandResult.stderr.decode(), fg='red')
+                    else:
+                        click.secho(commandString, fg='yellow')
+                        click.secho('Command returned with non-zero exit status %i' % commandResult.returncode,
+                                    fg='red')
             else:
                 click.secho('Skipping %s, up to date' % filename)
 
-        if not foundItem:
-            click.secho('No items found in %s' % sourceFileExpr)
+    if not foundItem:
+        click.secho('No items found in %s' % sourceFileExpr)
 
 
 if __name__ == '__main__':
