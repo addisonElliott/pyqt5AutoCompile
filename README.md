@@ -32,7 +32,7 @@ undocumented changes or bugs)
 For developers, you can clone the pyqt5ac repository and run the ``setup.py`` file. Use the following commands to get
 a copy from GitHub and install all dependencies
 
-    git clone pip install git+https://github.com/addisonElliott/pyqt5ac.git
+    git clone https://github.com/addisonElliott/pyqt5ac.git
     cd pyqt5ac
     pip install .
 
