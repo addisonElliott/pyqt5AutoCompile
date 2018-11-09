@@ -175,9 +175,11 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
 
             if ext == '.ui':
                 isQRCFile = False
+                cmd = 'PyQt5.uic.pyuic'
                 options = uicOptions
             elif ext == '.qrc':
                 isQRCFile = True
+                cmd = 'PyQt5.pyrcc_main'
                 options = rccOptions
             else:
                 click.secho('Unknown target %s found' % sourceFilename, fg='yellow')

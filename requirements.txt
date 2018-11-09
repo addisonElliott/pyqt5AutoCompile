@@ -1,3 +1,2 @@
 click
 pyyaml
-pyqt5

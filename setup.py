@@ -34,7 +34,7 @@ setup(name='pyqt5ac',
       author_email='addison.elliott@gmail.com',
       url='https://github.com/addisonElliott/pyqt5ac',
       license='MIT License',
-      install_requires=['click', 'pyyaml', 'pyqt5'],
+      install_requires=['click', 'pyyaml'],
       python_requires='>=3',
       py_modules=['pyqt5ac'],
       entry_points={
