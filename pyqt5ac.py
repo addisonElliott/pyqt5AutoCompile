@@ -195,7 +195,7 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
             if force or _isOutdated(sourceFilename, destFilename, isQRCFile):
                 argList, commandString = _buildCommand(module, command, options, sourceFilename, destFilename)
 
-                commandResult = subprocess.run(argList, capture_output=True)
+                commandResult = subprocess.run(argList, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
                 if commandResult.returncode == 0:
                     click.secho(commandString, fg='green')
