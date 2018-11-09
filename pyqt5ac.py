@@ -2,9 +2,8 @@ import glob
 import json
 import os
 import shlex
+import subprocess
 import sys
-import tempfile
-from io import StringIO
 
 import PyQt5.pyrcc_main
 import PyQt5.uic
@@ -12,58 +11,6 @@ import click
 import yaml
 
 __version__ = '1.0.2'
-
-
-# @contextmanager
-# def capture(source=sys.stdout, destination=os.devnull):
-#     sourceFileNo = source.fileno()
-#     destinationFileNo = destination.fileno()
-#
-#     oldSource = os.dup(sourceFileNo)
-#     source.flush()
-#     os.dup2(destinationFileNo, source.fileno())
-#
-#     try:
-#         yield
-#     finally:
-#         os.dup2(oldSource, source.fileno())
-#         pass
-
-# with os.fdopen(os.dup(sourceFileNo), 'wb') as copied:
-#     source.flush()
-#
-#     try:
-#         os.dup2(destinationFileNo, source.fileno())
-#     except ValueError:
-#         with open(destination, 'wb') as fh:
-#             os.dup2(fh.fileno(), sourceFileNo)
-#
-#     try:
-#         yield
-#     finally:
-#         source.flush()
-#         destination.flush()
-#         print('sss')
-#         os.dup2(copied.fileno(), source.fileno())
-#         pass
-
-# stdout_fd = fileno(stdout)
-# # copy stdout_fd before it is overwritten
-# #NOTE: `copied` is inheritable on Windows when duplicating a standard stream
-# with os.fdopen(os.dup(stdout_fd), 'wb') as copied:
-#     stdout.flush()  # flush library buffers that dup2 knows nothing about
-#     try:
-#         os.dup2(fileno(to), stdout_fd)  # $ exec >&to
-#     except ValueError:  # filename
-#         with open(to, 'wb') as to_file:
-#             os.dup2(to_file.fileno(), stdout_fd)  # $ exec > to
-#     try:
-#         yield stdout # allow code to be run with the redirected stdout
-#     finally:
-#         # restore stdout to its previous value
-#         #NOTE: dup2 makes stdout_fd inheritable unconditionally
-#         stdout.flush()
-#         os.dup2(copied.fileno(), stdout_fd)  # $ exec >&copied
 
 
 # Takes command, options, source and destination folders and creates a command from it
@@ -242,58 +189,32 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
             # If we are force compiling everything or the source file is outdated, then compile, otherwise skip!
             if force or _isOutdated(sourceFilename, destFilename, isQRCFile):
                 if isQRCFile:
-                    # old_stderr = sys.stderr
-                    # sys.stderr = mystdout = StringIO()
+                    # TODO Add options
+                    result = subprocess.run([sys.executable, '-m', 'PyQt5.pyrcc_main', '-o', destFilename, sourceFilename], capture_output=True)
 
-                    # TODO Pull from stderr the value and do stuff
-                    # with tempfile.TemporaryFile() as fp:
-                    # with open('C:/Users/adellio/Desktop/test.txt', 'w') as fp:
-                        # with capture(sys.stderr, fp):
-                        fp = open('C:/Users/adellio/Desktop/test.txt', 'w')
+                    if result.returncode:
+                        if result.stderr:
+                            pass
+                        else:
+                            pass
+                    else:
+                        click.secho('Success!', fg='green')
 
-                        sys.stderr.write('testingdddd11\n')
-                        print('xxx', sys.stderr.fileno())
+                        # if e.output:
+                        #     # click.secho(commandString, fg='yellow')
+                        #     click.secho(e.output.decode(sys.stdout.encoding), fg='red')
+                        # else:
+                        #     pass
+                        #     # click.secho(commandString, fg='red')
+                    # except OSError as e:
+                    #     # click.secho(commandString, fg='yellow')
+                    #     click.secho(str(e), fg='red')
+                    # else:
+                    #     pass
+                    #     # click.secho(commandString, fg='green')
 
-                        old_stderr = os.dup(sys.stderr.fileno())
-
-                        print(old_stderr)
-
-                        # sys.stderr.flush()
-
-                        print(fp.fileno())
-
-                        print(os.dup2(fp.fileno(), sys.stderr.fileno()))
-                        prev = sys.stderr
-                        sys.stderr = os.fdopen(fp.fileno(), 'w')
-
-                        print(fp.fileno(), sys.stderr.fileno(), old_stderr)
-
-                        # result = PyQt5.pyrcc_main.processResourceFile([sourceFilename], destFilename, False)
-                        sys.stderr.write('test\n')
-                        fp.write('dkdkdk')
-
-                        # fp.flush()
-                        # fp.close()
-                        # sys.stderr.flush()
-                        # os.dup2(sys.stderr.fileno(), old_stderr)
-                        print(os.dup2(old_stderr, sys.stderr.fileno()))
-                        sys.stderr = prev
-                        os.close(old_stderr)
-
-                        print(sys.stderr.fileno(), old_stderr)
-
-                        # raise ValueError('testing')
-                        print('ok')
-                        sys.stderr.write('testingdddd\n')
-                        print('ok2')
-
-                # print(result)
-
-                    # sys.stderr = old_stderr
-                    # print('Value extracted: ', mystdout.getvalue())
-
-                    # # examine mystdout.getvalue()
-
+                    pass
+                    # PyQt5.pyrcc_main.processResourceFile([sourceFilename], destFilename, False)
                     # TODO Setup globals already
                 else:
                     # TODO Pass options here
