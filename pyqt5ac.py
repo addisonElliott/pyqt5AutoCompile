@@ -72,9 +72,11 @@ def _isOutdated(src, dst, isQRCFile):
 @click.option('--config', '-c', default='', type=click.Path(exists=True, file_okay=True, dir_okay=False),
               help='JSON or YAML file containing the configuration parameters')
 @click.option('--force', default=False, is_flag=True, help='Compile all files regardless of last modification time')
+@click.option('--ensure_init', default=True, is_flag=True, help='Ensures that eventual new folders are Python modules '
+                                                                '(add an empty __init__.py)')
 @click.argument('iopaths', nargs=-1, required=False)
 @click.version_option(__version__)
-def cli(rccOptions, uicOptions, force, config, iopaths=()):
+def cli(rccOptions, uicOptions, force, config, ensure_init, iopaths=()):
     """Compile PyQt5 UI/QRC files into Python
 
     IOPATHS argument is a space delineated pair of glob expressions that specify the source files to compile as the
@@ -122,10 +124,10 @@ def cli(rccOptions, uicOptions, force, config, iopaths=()):
     # second column the destination file expression.
     ioPaths = list(zip(iopaths[::2], iopaths[1::2]))
 
-    main(rccOptions, uicOptions, force, config, ioPaths)
+    main(rccOptions, uicOptions, force, config, ensure_init, ioPaths)
 
 
-def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
+def main(rccOptions='', uicOptions='', force=False, config='', ensure_init=True, ioPaths=(), variables={}):
     if config:
         with open(config, 'r') as fh:
             if config.endswith('.yml'):
@@ -141,10 +143,15 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
             uicOptions = configData.get('uic_options', uicOptions)
             force = configData.get('force', force)
             ioPaths = configData.get('ioPaths', ioPaths)
+            variables = configData.get('variables', variables)
 
     # Loop through the list of io paths
     for sourceFileExpr, destFileExpr in ioPaths:
         foundItem = False
+
+        # Replace instances of the variables with the actual values of the available variables
+        for variable_name, variable_value in variables.items():
+            sourceFileExpr = sourceFileExpr.replace("%%{}%%".format(variable_name), variable_value)
 
         # Find files that match the source filename expression given
         for sourceFilename in glob.glob(sourceFileExpr, recursive=True):
@@ -167,9 +174,10 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
             filename, ext = os.path.splitext(basename)
 
             # Replace instances of the variables with the actual values from the source filename
-            destFilename = destFileExpr.replace('%%FILENAME%%', filename) \
-                .replace('%%EXT%%', ext[1:]) \
-                .replace('%%DIRNAME%%', dirname)
+            destFilename = destFileExpr
+            variables.update({'FILENAME': filename, 'EXT': ext[1:],'DIRNAME': dirname})
+            for variable_name, variable_value in variables.items():
+                destFilename = destFilename.replace("%%{}%%".format(variable_name), variable_value)
 
             # Retrieve the absolute path to the source and destination filename
             sourceFilename, destFilename = os.path.abspath(sourceFilename), os.path.abspath(destFilename)
@@ -190,6 +198,10 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
 
             # Create all directories to the destination filename and do nothing if they already exist
             os.makedirs(os.path.dirname(destFilename), exist_ok=True)
+
+            if ensure_init:
+                with open(os.path.join(os.path.dirname(destFilename), "__init__.py"), 'w'):
+                    pass
 
             # If we are force compiling everything or the source file is outdated, then compile, otherwise skip!
             if force or _isOutdated(sourceFilename, destFilename, isQRCFile):
