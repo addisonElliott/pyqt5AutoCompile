@@ -8,6 +8,8 @@ install:
   - pip install --upgrade pip
   - pip install -r requirements.txt
 
+script: ignore
+
 # Command to deploy releases to PyPi
 deploy:
   provider: pypi
