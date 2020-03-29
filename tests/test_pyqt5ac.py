@@ -1,10 +1,26 @@
+import os
 import time
 
-from .. import pyqt5ac
+
+def _is_gitlab_ci():
+    os.getenv("GITLAB_CI") is not None
+
+
+if _is_gitlab_ci():
+    import pyqt5ac
+else:
+    from .. import pyqt5ac
 
 
 def _assert_path_exists(expected_path):
     assert expected_path.check(), ("Generated file does not exist " + str(expected_path))
+
+
+def _wait():
+    if _is_gitlab_ci():
+        time.sleep(1)
+    else:
+        time.sleep(0.010)
 
 
 def _write_config_file(dir):
@@ -107,7 +123,7 @@ def test_ui_generation_when_out_of_date(tmpdir):
     dest_file.write("test")
     dest_mod_time = dest_file.mtime()
 
-    time.sleep(0.005)
+    _wait()
     ui_file = tmpdir.mkdir("gui").join("main.ui")
     _write_ui_file(ui_file)
     source_mod_time = ui_file.mtime()
@@ -154,7 +170,7 @@ def test_resource_generation_when_resource_out_of_date(tmpdir):
     dest_file.write("test")
     dest_mod_time = dest_file.mtime()
 
-    time.sleep(0.005)
+    _wait()
     resource_file = tmpdir.join("resources/resource.qrc")
     _write_resource_file(resource_file)
     source_mod_time = resource_file.mtime()
@@ -179,7 +195,7 @@ def test_resource_generation_when_image_out_of_date(tmpdir):
     dest_file.write("test")
     dest_mod_time = dest_file.mtime()
 
-    time.sleep(0.005)
+    _wait()
     example_image = tmpdir.join("resources/example.png")
     example_image.write("test")
 
