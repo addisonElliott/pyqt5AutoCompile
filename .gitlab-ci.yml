@@ -1,0 +1,52 @@
+image: python:3.8
+
+before_script:
+  - python -V
+
+stages:
+  - test
+  - QA
+
+.test script: &test_script
+- pip install -e .
+- pip install PyQt5 pytest pytest-cov
+- export PYTHONPATH="$PYTHONPATH:."
+- pytest . --cov=pyqt5ac --junitxml=report.xml --cov-report html:coverage --cov-report term -vx --color=yes
+
+.test template:
+  stage: test
+  script:
+    - *test_script
+  artifacts:
+    reports:
+      junit: report.xml
+
+Test latest:
+  extends: .test template
+  image: python:latest
+
+Test 3.8:
+  extends: .test template
+  image: python:3.8
+  script:
+    - *test_script
+    - grep "Coverage for pyqt5ac.py" coverage/pyqt5ac_py.html
+  artifacts:
+    name: coverage-report
+    paths:
+      - coverage
+
+Test 3.6:
+  extends: .test template
+  image: python:3.6
+
+Test 3.5:
+  extends: .test template
+  image: python:3.5
+
+Flake:
+  stage: QA
+  needs: []
+  script:
+    - pip install flake8
+    - flake8 --max-line-length=120 pyqt5ac.py
