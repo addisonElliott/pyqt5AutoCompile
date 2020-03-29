@@ -3,7 +3,7 @@ import time
 
 
 def _is_gitlab_ci():
-    os.getenv("GITLAB_CI") is not None
+    return os.getenv("GITLAB_CI") is not None
 
 
 if _is_gitlab_ci():
