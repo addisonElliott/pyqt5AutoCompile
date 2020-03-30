@@ -84,6 +84,7 @@ Whether running via the command line or from a script, the arguments and options
     * %%FILENAME%% - Filename of the source file without the extension
     * %%EXT%% - Extension excluding the period of the file (e.g. ui or qrc)
     * %%DIRNAME%% - Directory of the source file
+* **variables** - custom variables that can be used in the definition of the paths in **ioPaths**. For example, to limit the search of files to a specific directory, one can define a variable `BASEDIR` and then use it as `%%BASEDIR%%/gui/*.ui*`
 
 Example
 =======
@@ -101,10 +102,10 @@ Take the following file structure as an example project where any UI and QRC fil
 |   `-- style.qrc
 |-- modules
 |   |-- welcome
-|       |-- module.ui
-|       `-- resources
-|           |-- images
-|           `-- module.qrc
+|   |   |-- module.ui
+|   |   `-- resources
+|   |       |-- images
+|   |       `-- module.qrc
 |   `-- dataProbe
 |       |-- module.ui
 |       `-- resources

@@ -73,7 +73,7 @@ def _isOutdated(src, dst, isQRCFile):
               help='JSON or YAML file containing the configuration parameters')
 @click.option('--force', default=False, is_flag=True, help='Compile all files regardless of last modification time')
 @click.option('--no_init', default=True, is_flag=True, help='Ensures that eventual new folders are Python modules '
-                                                                '(add an empty __init__.py)')
+                                                            '(add an empty __init__.py)')
 @click.argument('iopaths', nargs=-1, required=False)
 @click.version_option(__version__)
 def cli(rccOptions, uicOptions, force, config, no_init, iopaths=()):
@@ -127,6 +127,20 @@ def cli(rccOptions, uicOptions, force, config, no_init, iopaths=()):
     main(rccOptions, uicOptions, force, config, no_init, ioPaths)
 
 
+def replaceVariables(variables_definition, string_with_variables):
+    """
+    Performa the variable replacement into thr path's string
+    :param variables_definition: mapping variable_name - variable value. Matching names encased into %% will be replaces
+    by their respective value found in the mapping (case-sensitive)
+    :param string_with_variables: String where to replace the variable names (enclosed into %%'s) with their respective
+    values found in the variables_definition
+    :return: the input string with its variables replaced.
+    """
+    for variable_name, variable_value in variables_definition.items():
+        string_with_variables = string_with_variables.replace("%%{}%%".format(variable_name), variable_value)
+    return string_with_variables
+
+
 def main(rccOptions='', uicOptions='', force=False, config='', no_init=False, ioPaths=(), variables={}):
     if config:
         with open(config, 'r') as fh:
@@ -150,8 +164,7 @@ def main(rccOptions='', uicOptions='', force=False, config='', no_init=False, io
         foundItem = False
 
         # Replace instances of the variables with the actual values of the available variables
-        for variable_name, variable_value in variables.items():
-            sourceFileExpr = sourceFileExpr.replace("%%{}%%".format(variable_name), variable_value)
+        sourceFileExpr = replaceVariables(variables, sourceFileExpr)
 
         # Find files that match the source filename expression given
         for sourceFilename in glob.glob(sourceFileExpr, recursive=True):
@@ -174,10 +187,8 @@ def main(rccOptions='', uicOptions='', force=False, config='', no_init=False, io
             filename, ext = os.path.splitext(basename)
 
             # Replace instances of the variables with the actual values from the source filename
-            destFilename = destFileExpr
-            variables.update({'FILENAME': filename, 'EXT': ext[1:],'DIRNAME': dirname})
-            for variable_name, variable_value in variables.items():
-                destFilename = destFilename.replace("%%{}%%".format(variable_name), variable_value)
+            variables.update({'FILENAME': filename, 'EXT': ext[1:], 'DIRNAME': dirname})
+            destFilename = replaceVariables(variables, destFileExpr)
 
             # Retrieve the absolute path to the source and destination filename
             sourceFilename, destFilename = os.path.abspath(sourceFilename), os.path.abspath(destFilename)
