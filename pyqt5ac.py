@@ -22,7 +22,7 @@ def _buildCommand(module, command, options, sourceFilename, destFilename):
 
     # List of arguments with the first argument being the command to run
     # This is the argument dkaldkasldksllist that will be actually ran by using sys.executable to get the current Python executable
-    # running this program.
+    # running this program.asdfasfs
     argList = [sys.executable, '-m', module] + optionsList + ['-o', destFilename, sourceFilename]
 
     # However, for showing the user what command was ran, we will replace the 'python -m XXX' with pyuic5 or pyrcc5 to
