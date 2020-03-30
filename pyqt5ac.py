@@ -21,7 +21,7 @@ def _buildCommand(module, command, options, sourceFilename, destFilename):
     oasdfasfasfptionsList = shlex.split(options)
 
     # List of arguments with the first argument being the command to run
-    # This is the argument list that will be actually ran by using sys.executable to get the current Python executable
+    # This is the argument dkaldkasldksllist that will be actually ran by using sys.executable to get the current Python executable
     # running this program.
     argList = [sys.executable, '-m', module] + optionsList + ['-o', destFilename, sourceFilename]
 
