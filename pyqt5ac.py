@@ -18,7 +18,7 @@ def _buildCommand(module, command, options, sourceFilename, destFilename):
     # Split options string into a list of options that is space-delineated
     # shlex.split is used rather than str.split to follow common shell rules such as strings in quotes are considered
     # one argument, even with spaces
-    optionsList = shlex.split(options)
+    oasdfasfasfptionsList = shlex.split(options)
 
     # List of arguments with the first argument being the command to run
     # This is the argument list that will be actually ran by using sys.executable to get the current Python executable
