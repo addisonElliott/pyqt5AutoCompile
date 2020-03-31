@@ -159,6 +159,10 @@ def main(rccOptions='', uicOptions='', force=False, config='', no_init=False, io
             ioPaths = configData.get('ioPaths', ioPaths)
             variables = configData.get('variables', variables)
 
+    # Validate the custom variables
+    if 'FILENAME' in variables.keys() or 'EXT' in variables.keys() or 'DIRNAME' in variables.keys():
+        raise ValueError("Custom variables cannot be called FILENAME EXT OR DIRNAME.")
+
     # Loop through the list of io paths
     for sourceFileExpr, destFileExpr in ioPaths:
         foundItem = False
@@ -187,8 +191,6 @@ def main(rccOptions='', uicOptions='', force=False, config='', no_init=False, io
             filename, ext = os.path.splitext(basename)
 
             # Replace instances of the variables with the actual values from the source filename
-            if 'FILENAME' in variables.keys() or 'EXT' in variables.keys() or 'DIRNAME' in variables.keys():
-                raise ValueError("Custom variables cannot be called FILENAME EXT OR DIRNAME.")
             variables.update({'FILENAME': filename, 'EXT': ext[1:], 'DIRNAME': dirname})
             destFilename = replaceVariables(variables, destFileExpr)
 
