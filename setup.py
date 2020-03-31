@@ -25,6 +25,24 @@ with open(os.path.join(currentPath, 'README.md'), 'r') as f:
 
 longDescription = '\n' + longDescription
 
+REQUIREMENTS: dict = {
+    'core': [
+        'PyQt5',
+        'click',
+        'pyyaml',
+    ],
+    'test': [
+        'pytest',
+        'pytest-cov',
+    ],
+    'dev': [
+        # 'requirement-for-development-purposes-only',
+    ],
+    'doc': [
+    ],
+}
+
+
 setup(name='pyqt5ac',
       version=find_version('pyqt5ac.py'),
       description='Python module to automatically compile UI and RC files in PyQt5 to Python files',
@@ -34,7 +52,17 @@ setup(name='pyqt5ac',
       author_email='addison.elliott@gmail.com',
       url='https://github.com/addisonElliott/pyqt5ac',
       license='MIT License',
-      install_requires=['click', 'pyyaml'],
+      install_requires=REQUIREMENTS['core'],
+      extras_require={
+        **REQUIREMENTS,
+        # The 'dev' extra is the union of 'test' and 'doc', with an option
+        # to have explicit development dependencies listed.
+        'dev': [req
+                for extra in ['dev', 'test', 'doc']
+                for req in REQUIREMENTS.get(extra, [])],
+        # The 'all' extra is the union of all requirements.
+        'all': [req for reqs in REQUIREMENTS.values() for req in reqs],
+      },
       python_requires='>=3',
       py_modules=['pyqt5ac'],
       entry_points={
@@ -55,4 +83,4 @@ setup(name='pyqt5ac',
           'Source': 'https://github.com/addisonElliott/pyqt5ac',
           'Tracker': 'https://github.com/addisonElliott/pyqt5ac/issues',
       }
-      )
+)
