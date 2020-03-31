@@ -19,4 +19,4 @@ jobs:
         pip install -e .[test]
     - name: Test with pytest
       run: |
-        pytest . --cov=pyqt5ac --junitxml=report.xml --cov-report html:coverage --cov-report term
+        pytest . --cov=pyqt5ac --junitxml=report.xml --cov-report html:coverage --cov-report term -vx --color=yes
