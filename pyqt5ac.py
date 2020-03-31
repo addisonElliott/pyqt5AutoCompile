@@ -127,7 +127,7 @@ def cli(rccOptions, uicOptions, force, config, iopaths=()):
 
 def replaceVariables(variables_definition, string_with_variables):
     """
-    Performa the variable replacement into thr path's string
+    Performs variable replacements into the given string
     :param variables_definition: mapping variable_name - variable value. Matching names encased into %% will be replaces
     by their respective value found in the mapping (case-sensitive)
     :param string_with_variables: String where to replace the variable names (enclosed into %%'s) with their respective
