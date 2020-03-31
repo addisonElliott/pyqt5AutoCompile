@@ -25,7 +25,7 @@ with open(os.path.join(currentPath, 'README.md'), 'r') as f:
 
 longDescription = '\n' + longDescription
 
-REQUIREMENTS: dict = {
+REQUIREMENTS = {
     'core': [
         'PyQt5',
         'click',
