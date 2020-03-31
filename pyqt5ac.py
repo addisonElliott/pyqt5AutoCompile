@@ -130,7 +130,7 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=()):
         with open(config, 'r') as fh:
             if config.endswith('.yml'):
                 # Load YAML file
-                configData = yaml.load(fh)
+                configData = yaml.load(fh, Loader=yaml.FullLoader)
             else:
                 click.secho('JSON usage is deprecated and will be removed in 2.0.0. Use YML configuration instead',
                             fg='yellow')
