@@ -1,6 +1,24 @@
+[![pipeline status](https://gitlab.com/zkovari/pyqt5ac/badges/master/pipeline.svg)](https://gitlab.com/zkovari/pyqt5ac/-/commits/master)
+[![coverage report](https://gitlab.com/zkovari/pyqt5ac/badges/master/coverage.svg)](https://gitlab.com/zkovari/pyqt5ac/-/commits/master)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyqt5ac.svg)](https://pypi.org/project/pyqt5ac/)
 [![PyPI](https://img.shields.io/pypi/v/pyqt5ac.svg)](https://pypi.org/project/pyqt5ac/)
 [![PyPI - License](https://img.shields.io/pypi/l/pyqt5ac.svg)](https://github.com/addisonElliott/pyqt5ac/blob/master/LICENSE)
+
+* [PyQt5 Auto Compiler (pyqt5ac)](#pyqt5-auto-compiler-pyqt5ac)
+  * [Enter <strong>pyqt5ac</strong>!](#enter-pyqt5ac)
+* [Installing](#installing)
+* [Getting Started](#getting-started)
+  * [Running from Command Line](#running-from-command-line)
+  * [Running from Python Script](#running-from-python-script)
+* [Configuration Options](#configuration-options)
+* [Example](#example)
+  * [Option 1: YAML Config File (Recommended)](#option-1-yaml-config-file-recommended)
+  * [Option 2: JSON Config File (Deprecated)](#option-2-json-config-file-deprecated)
+  * [Option 3: Python Script](#option-3-python-script)
+  * [Option 4: Command Line](#option-4-command-line)
+  * [Resulting File Structure](#resulting-file-structure)
+* [Support](#support)
+* [License](#license)
 
 PyQt5 Auto Compiler (pyqt5ac)
 =============================
@@ -124,10 +142,10 @@ ioPaths:
     - "generated/%%FILENAME%%_ui.py"
   -
     - "resources/*.qrc"
-    - "generated/%%FILENAME_%%EXT%%.py"
+    - "generated/%%FILENAME_%%%%EXT%%.py"
   -
     - "modules/*/*.ui"
-    - "%%DIRNAME%%/generated/%%FILENAME_ui.py"
+    - "%%DIRNAME%%/generated/%%FILENAME%%_ui.py"
   -
     - "modules/*/resources/*.qrc"
     - "%%DIRNAME%%/generated/%%FILENAME%%_rc.py"
@@ -148,7 +166,7 @@ import pyqt5ac
 pyqt5ac.main(config='config.yml')
 ```
 
-Option 2: JSON Config File (Recommended)
+Option 2: JSON Config File (Deprecated)
 ---------------------------------------
 ```JSON
 {
