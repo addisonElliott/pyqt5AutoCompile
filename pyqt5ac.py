@@ -139,7 +139,7 @@ def replaceVariables(variables_definition, string_with_variables):
     return string_with_variables
 
 
-def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), variables={}):
+def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), variables=None):
     if config:
         with open(config, 'r') as fh:
             if config.endswith('.yml'):
@@ -158,8 +158,10 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), varia
             variables = configData.get('variables', variables)
 
     # Validate the custom variables
+    if variables is None:
+        variables = {}
     if 'FILENAME' in variables.keys() or 'EXT' in variables.keys() or 'DIRNAME' in variables.keys():
-        raise ValueError("Custom variables cannot be called FILENAME EXT OR DIRNAME.")
+        raise ValueError("Custom variables cannot be called FILENAME, EXT or DIRNAME.")
 
     # Loop through the list of io paths
     for sourceFileExpr, destFileExpr in ioPaths:
