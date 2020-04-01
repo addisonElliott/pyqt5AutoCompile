@@ -127,7 +127,7 @@ def cli(rccOptions, uicOptions, force, config, iopaths=()):
 
 def replaceVariables(variables_definition, string_with_variables):
     """
-    Performa the variable replacement into thr path's string
+    Performs variable replacements into the given string
     :param variables_definition: mapping variable_name - variable value. Matching names encased into %% will be replaces
     by their respective value found in the mapping (case-sensitive)
     :param string_with_variables: String where to replace the variable names (enclosed into %%'s) with their respective
@@ -144,8 +144,10 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), varia
         with open(config, 'r') as fh:
             if config.endswith('.yml'):
                 # Load YAML file
-                configData = yaml.load(fh)
+                configData = yaml.load(fh, Loader=yaml.FullLoader)
             else:
+                click.secho('JSON usage is deprecated and will be removed in 2.0.0. Use YML configuration instead',
+                            fg='yellow')
                 # Assume JSON file
                 configData = json.load(fh)
 

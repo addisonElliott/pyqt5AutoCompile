@@ -1,6 +1,8 @@
 import os
 import time
 
+import pytest
+
 from .. import pyqt5ac
 
 
@@ -28,6 +30,22 @@ def _write_config_file(dir):
   -
     - '{dir}/resources/*.qrc'
     - '{dir}/generated/%%FILENAME%%_rc.py'""".format(dir=str(dir)))
+
+    return config
+
+
+def _write_config_file_with_variables(dir, variable_name, variable_value):
+    config = dir.join("input_config.yml")
+    config.write("""variables:
+  {variable_name}: {variable_value}
+ioPaths:
+  -
+    - '%%{variable_name}%%/gui/*.ui'
+    - '%%{variable_name}%%/generated/%%FILENAME%%_ui.py'
+  -
+    - '%%{variable_name}%%/resources/*.qrc'
+    - '%%{variable_name}%%/generated/%%FILENAME%%_rc.py'""".format(variable_name=variable_name,
+                                                                   variable_value=variable_value))
 
     return config
 
@@ -204,6 +222,25 @@ def test_resource_generation_when_image_out_of_date(tmpdir):
     assert "test" != dest_file.read()
 
 
+def test_generation_fails_with_forbidden_filename_variable(tmpdir):
+    run_forbidden_variable_case(tmpdir, 'FILENAME')
+
+
+def test_generation_fails_with_forbidden_ext_variable(tmpdir):
+    run_forbidden_variable_case(tmpdir, 'EXT')
+
+
+def test_generation_fails_with_forbidden_dirname_variable(tmpdir):
+    run_forbidden_variable_case(tmpdir, 'DIRNAME')
+
+
+def run_forbidden_variable_case(tmpdir, variable):
+    config = _write_config_file_with_variables(tmpdir, variable, 'value')
+
+    with pytest.raises(ValueError):
+        pyqt5ac.main(config=str(config))
+
+
 def test_ui_generation_when_invalid(tmpdir):
     config = _write_config_file(tmpdir)
     ui_file = tmpdir.mkdir("gui").join("main.ui")
@@ -214,3 +251,14 @@ def test_ui_generation_when_invalid(tmpdir):
     assert tmpdir.join("generated").check()
     # TODO generated file should not exist and pyqt5ac should fail
     assert tmpdir.join("generated/main_ui.py").check()
+
+
+def test_ui_generation_with_variables(tmpdir):
+    config = _write_config_file_with_variables(tmpdir, 'BASENAME', str(tmpdir))
+    ui_file = tmpdir.mkdir("gui").join("main.ui")
+    _write_ui_file(ui_file)
+
+    pyqt5ac.main(config=str(config), uicOptions="-d")
+
+    _assert_path_exists(tmpdir.join("generated"))
+    _assert_path_exists(tmpdir.join("generated/main_ui.py"))
