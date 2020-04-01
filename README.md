@@ -131,7 +131,7 @@ Take the following file structure as an example project where any UI and QRC fil
 |           `-- module.qrc
 ```
 
-The sections below demonstrate how to setup pyqt5ac to compile the necssary files given the file structure above.
+The sections below demonstrate how to setup pyqt5ac to compile the necessary files given the file structure above.
 
 Option 1: YAML Config File (Recommended)
 ---------------------------------------
@@ -151,6 +151,7 @@ ioPaths:
     - "%%DIRNAME%%/generated/%%FILENAME%%_rc.py"
 
 uic_options: --from-imports
+init_package: True
 force: False
 ```
 
@@ -178,6 +179,7 @@ Option 2: JSON Config File (Deprecated)
   ],
   "rcc_options": "",
   "uic_options": "--from-imports",
+  "init_package": true,
   "force": false
 }
 ```
@@ -199,7 +201,7 @@ Option 3: Python Script
 ```python
 import pyqt5ac
 
-pyqt5ac.main(uicOptions='--from-imports', force=False, ioPaths=[
+pyqt5ac.main(uicOptions='--from-imports', force=False, initPackage=True, ioPaths=[
         ['gui/*.ui', 'generated/%%FILENAME%%_ui.py'],
         ['resources/*.qrc', 'generated/%%FILENAME%%_rc.py'],
         ['modules/*/*.ui', '%%DIRNAME%%/generated/%%FILENAME%%_ui.py'],
@@ -226,6 +228,7 @@ Resulting File Structure
 |   |-- app.qrc
 |   `-- style.qrc
 |-- generated
+|   |-- __init__.py_
 |   |-- mainWindow_ui.py
 |   |-- addDataDialog_ui.py
 |   |-- saveDataDialog_ui.py
