@@ -14,6 +14,10 @@ def _assert_path_exists(expected_path):
     assert expected_path.check(), ("Generated file does not exist " + str(expected_path))
 
 
+def _assert_path_does_not_exist(expected_path):
+    assert not expected_path.check(), ("Generated file exists " + str(expected_path))
+
+
 def _wait():
     if _is_gitlab_ci():
         time.sleep(1)
@@ -31,6 +35,21 @@ def _write_config_file(dir):
     - '{dir}/resources/*.qrc'
     - '{dir}/generated/%%FILENAME%%_rc.py'""".format(dir=str(dir)))
 
+    return config
+
+
+def _write_config_file_without_init(dir):
+    config = dir.join("input_config.yml")
+    config.write("""
+        init_package: False 
+        ioPaths:
+          -
+            - '{dir}/gui/*.ui'
+            - '{dir}/generated/%%FILENAME%%_ui.py'
+          -
+            - '{dir}/resources/*.qrc'
+            - '{dir}/generated/%%FILENAME%%_rc.py'
+         """.format(dir=str(dir)))
     return config
 
 
@@ -262,3 +281,48 @@ def test_ui_generation_with_variables(tmpdir):
 
     _assert_path_exists(tmpdir.join("generated"))
     _assert_path_exists(tmpdir.join("generated/main_ui.py"))
+
+
+def test_init_is_created(tmpdir):
+    config = _write_config_file(tmpdir)
+    ui_file = tmpdir.mkdir("gui").join("main.ui")
+    _write_ui_file(ui_file)
+
+    pyqt5ac.main(config=str(config))
+
+    _assert_path_exists(tmpdir.join("generated"))
+    dest_file = tmpdir.join("generated/main_ui.py")
+    _assert_path_exists(dest_file)
+    init_file = tmpdir.join("generated/__init__.py")
+    _assert_path_exists(init_file)
+
+
+def test_init_is_untouched(tmpdir):
+    config = _write_config_file(tmpdir)
+    ui_file = tmpdir.mkdir("gui").join("main.ui")
+    _write_ui_file(ui_file)
+    init_file = tmpdir.mkdir("generated").join("__init__.py")
+    init_file.write("test")
+
+    pyqt5ac.main(config=str(config))
+
+    _assert_path_exists(tmpdir.join("generated"))
+    dest_file = tmpdir.join("generated/main_ui.py")
+    _assert_path_exists(dest_file)
+    init_file = tmpdir.join("generated/__init__.py")
+    _assert_path_exists(init_file)
+    assert "test" == init_file.read()
+
+
+def test_dont_check_for_init(tmpdir):
+    config = _write_config_file_without_init(tmpdir)
+    ui_file = tmpdir.mkdir("gui").join("main.ui")
+    _write_ui_file(ui_file)
+
+    pyqt5ac.main(config=str(config))
+
+    _assert_path_exists(tmpdir.join("generated"))
+    dest_file = tmpdir.join("generated/main_ui.py")
+    _assert_path_exists(dest_file)
+    init_file = tmpdir.join("generated/__init__.py")
+    _assert_path_does_not_exist(init_file)
