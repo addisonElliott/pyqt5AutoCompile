@@ -8,9 +8,7 @@ stages:
   - QA
 
 .test script: &test_script
-- pip install -e .
-- pip install PyQt5 pytest pytest-cov
-- export PYTHONPATH="$PYTHONPATH:."
+- pip install -e .[test]
 - pytest . --cov=pyqt5ac --junitxml=report.xml --cov-report html:coverage --cov-report term -vx --color=yes
 
 .test template:
