@@ -8,7 +8,7 @@ import sys
 import click
 import yaml
 
-__version__ = '1.0.4'
+__version__ = '1.1.0'
 
 
 # Takes information about command and creates an argument list from it

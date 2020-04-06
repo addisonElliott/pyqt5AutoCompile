@@ -52,11 +52,7 @@ a copy from GitHub and install all dependencies
 
     git clone https://github.com/addisonElliott/pyqt5ac.git
     cd pyqt5ac
-    pip install .
-
-or, for the last line, instead use
-
-    pip install -e .
+    pip install .[dev]
 
 to install in 'develop' or 'editable' mode, where changes can be made to the local working code and Python will use
 the updated code.
