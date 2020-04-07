@@ -80,7 +80,7 @@ The following snippet of code below demonstrates how to call pyqt5ac from your P
 import pyqt5ac
 
 if debug:
-    pyqt5ac.main(rccOptions='', uicOptions='--from-imports', force=False, config='',
+    pyqt5ac.main(rccOptions='', uicOptions='--from-imports', force=False, initPackage=True, config='',
                  ioPaths=[['gui/*.ui', 'generated/%%FILENAME%%_ui.py'],
                           ['resources/*.qrc', 'generated/%%FILENAME%%_rc.py']])
 ```
@@ -93,13 +93,13 @@ Whether running via the command line or from a script, the arguments and options
 * **rccOptions** - Additional options to pass to the resource compiler. See the man page of pyrcc5 for more information on options. An example of a valid option would be "-compress 1". Default is to pass no options.
 * **uicOptions** - Additional options to pass to the UI compiler. See the man page of pyuic5 for more information on options. An example of a valid option would be '--from-imports'. Default is to pass no options.
 * **force** - Specifies whether to force compile all of the files found. The default is false meaning only outdated files will be compiled.
-* **init_package** - Specifies whether to check that the folder containing the generated files should also contain an `__init__.py` file. Default is True meaning the (empty) file will be added if missing.
 * **config** - JSON or YAML configuration file that contains information about these parameters.
 * **ioPaths** - This is a 2D list containing information about what source files to compile and where to place the source files. The first column is the source file global expression (meaning you can use wildcards, ** for recursive folder search, ? for options, etc to match filenames) and the second column is the destination file expression. The destination file expression recognizes 'special' variables that will be replaced with information from the source filename:
     * %%FILENAME%% - Filename of the source file without the extension
     * %%EXT%% - Extension excluding the period of the file (e.g. ui or qrc)
     * %%DIRNAME%% - Directory of the source file
 * **variables** - custom variables that can be used in the definition of the paths in **ioPaths**. For example, to limit the search of files to a specific directory, one can define a variable `BASEDIR` and then use it as `%%BASEDIR%%/gui/*.ui*`
+* **init_package** - If specified, an empty `__init__.py` file is also generated in every output directory if missing. Does not overwrite existing `__init__.py`. Default value is `True`.
 
 Example
 =======
@@ -233,18 +233,18 @@ Resulting File Structure
 |   `-- style_rc.py
 |-- modules
 |   |-- welcome
-|       |-- module.ui
-|       |-- resources
-|           |-- images
-|           `-- module.qrc
-|       `-- generated
-|           |-- module_ui.py
-|           `-- module_rc.py
+|   |   |-- module.ui
+|   |   |-- resources
+|   |   |   |-- images
+|   |   |   `-- module.qrc
+|   |   `-- generated
+|   |       |-- module_ui.py
+|   |       `-- module_rc.py
 |   `-- dataProbe
 |       |-- module.ui
 |       |-- resources
-|           |-- images
-|           `-- module.qrc
+|       |   |-- images
+|       |   `-- module.qrc
 |       `-- generated
 |           |-- module_ui.py
 |           `-- module_rc.py
