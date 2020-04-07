@@ -73,11 +73,11 @@ def _isOutdated(src, dst, isQRCFile):
               help='JSON or YAML file containing the configuration parameters')
 @click.option('--force', default=False, is_flag=True, help='Compile all files regardless of last modification time')
 @click.option('--init-package', 'initPackage', default=True, is_flag=True,
-              help='Ensures that the folder containing the generated files is a Python submodule '
+              help='Ensures that the folder containing the generated files is a Python subpackage '
                    '(i.e. it contains a file called __init__.py')
 @click.argument('iopaths', nargs=-1, required=False)
 @click.version_option(__version__)
-def cli(rccOptions, uicOptions, force, initPackage, config, iopaths=()):
+def cli(rccOptions, uicOptions, force, config, iopaths=(), initPackage=True):
     """Compile PyQt5 UI/QRC files into Python
 
     IOPATHS argument is a space delineated pair of glob expressions that specify the source files to compile as the
@@ -125,7 +125,7 @@ def cli(rccOptions, uicOptions, force, initPackage, config, iopaths=()):
     # second column the destination file expression.
     ioPaths = list(zip(iopaths[::2], iopaths[1::2]))
 
-    main(rccOptions, uicOptions, force, initPackage, config, ioPaths)
+    main(rccOptions, uicOptions, force, config, ioPaths, variables, initPackage)
 
 
 def replaceVariables(variables_definition, string_with_variables):
@@ -142,7 +142,7 @@ def replaceVariables(variables_definition, string_with_variables):
     return string_with_variables
 
 
-def main(rccOptions='', uicOptions='', force=False, initPackage=True, config='', ioPaths=(), variables=None):
+def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), variables=None, initPackage=True):
     if config:
         with open(config, 'r') as fh:
             if config.endswith('.yml'):
@@ -159,9 +159,9 @@ def main(rccOptions='', uicOptions='', force=False, initPackage=True, config='',
             rccOptions = configData.get('rcc_options', rccOptions)
             uicOptions = configData.get('uic_options', uicOptions)
             force = configData.get('force', force)
-            initPackage = configData.get('init_package', initPackage)
             ioPaths = configData.get('ioPaths', ioPaths)
             variables = configData.get('variables', variables)
+            initPackage = configData.get('init_package', initPackage)
 
     # Validate the custom variables
     if variables is None:
