@@ -125,7 +125,7 @@ def cli(rccOptions, uicOptions, force, config, iopaths=(), initPackage=True):
     # second column the destination file expression.
     ioPaths = list(zip(iopaths[::2], iopaths[1::2]))
 
-    main(rccOptions, uicOptions, force, config, ioPaths, variables, initPackage)
+    main(rccOptions, uicOptions, force, config, ioPaths, initPackage)
 
 
 def replaceVariables(variables_definition, string_with_variables):
