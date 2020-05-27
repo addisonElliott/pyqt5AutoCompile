@@ -143,6 +143,21 @@ def replaceVariables(variables_definition, string_with_variables):
     return string_with_variables
 
 
+def resolvePath(path: str, reference_path: str) -> str:
+    """
+    Translates relative paths into absolute paths, using the reference path as base.
+    Meaningful reference values for the caller might be the configuration file path, the script's path or the current
+    working directory.
+    :param path: path to resolve.
+    :param reference_path: path to be used as a reference to servole absolute paths
+    :return: an absolute path corresponding to the relative path passed in input if it was relative, or the unchanged
+    input if it was an absolute path.
+    """
+    if not os.path.isabs(path):
+        return os.path.join(os.path.dirname(os.path.realpath(reference_path)), path)
+    return path
+
+
 def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), variables=None, initPackage=True):
     if config:
         with open(config, 'r') as fh:
@@ -201,8 +216,9 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), varia
             variables.update({'FILENAME': filename, 'EXT': ext[1:], 'DIRNAME': dirname})
             destFilename = replaceVariables(variables, destFileExpr)
 
-            # Retrieve the absolute path to the source and destination filename
-            sourceFilename, destFilename = os.path.abspath(sourceFilename), os.path.abspath(destFilename)
+            # Retrieve the absolute path to the source and destination files
+            sourceFilename = resolvePath(sourceFilename, (config or os.getcwd()))
+            destFilename = resolvePath(destFilename, (config or os.getcwd()))
 
             if ext == '.ui':
                 isQRCFile = False
