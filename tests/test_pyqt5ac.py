@@ -14,6 +14,15 @@ def _assert_path_exists(expected_path):
     assert expected_path.check(), ("Generated file does not exist " + str(expected_path))
 
 
+def _assert_path_does_not_exist(expected_path):
+    assert not expected_path.check(), ("Generated file exists " + str(expected_path))
+
+
+def _assert_empty_file_exists(empty_file):
+    _assert_path_exists(empty_file)
+    assert "" == empty_file.read()
+
+
 def _wait():
     if _is_gitlab_ci():
         time.sleep(1)
@@ -97,6 +106,7 @@ def test_ui_generation(tmpdir):
 
     _assert_path_exists(tmpdir.join("generated"))
     _assert_path_exists(tmpdir.join("generated/main_ui.py"))
+    _assert_empty_file_exists(tmpdir.join("generated/__init__.py"))
 
 
 def test_resource_generation(tmpdir):
@@ -111,6 +121,7 @@ def test_resource_generation(tmpdir):
 
     _assert_path_exists(tmpdir.join("generated"))
     _assert_path_exists(tmpdir.join("generated/resource_rc.py"))
+    _assert_empty_file_exists(tmpdir.join("generated/__init__.py"))
 
 
 def test_ui_generation_when_up_to_date(tmpdir):
@@ -125,6 +136,7 @@ def test_ui_generation_when_up_to_date(tmpdir):
     pyqt5ac.main(config=str(config))
 
     _assert_path_exists(tmpdir.join("generated"))
+    _assert_empty_file_exists(tmpdir.join("generated/__init__.py"))
     dest_file = tmpdir.join("generated/main_ui.py")
     _assert_path_exists(dest_file)
     assert modification_time == dest_file.mtime()
@@ -147,6 +159,7 @@ def test_ui_generation_when_out_of_date(tmpdir):
     pyqt5ac.main(config=str(config))
 
     _assert_path_exists(tmpdir.join("generated"))
+    _assert_empty_file_exists(tmpdir.join("generated/__init__.py"))
     dest_file = tmpdir.join("generated/main_ui.py")
     _assert_path_exists(dest_file)
     assert dest_mod_time != dest_file.mtime()
@@ -168,6 +181,7 @@ def test_resource_generation_when_up_to_date(tmpdir):
     pyqt5ac.main(config=str(config))
 
     _assert_path_exists(tmpdir.join("generated"))
+    _assert_empty_file_exists(tmpdir.join("generated/__init__.py"))
     dest_file = tmpdir.join("generated/main_rc.py")
     _assert_path_exists(dest_file)
     assert modification_time == dest_file.mtime()
@@ -193,6 +207,7 @@ def test_resource_generation_when_resource_out_of_date(tmpdir):
     pyqt5ac.main(config=str(config))
 
     _assert_path_exists(tmpdir.join("generated"))
+    _assert_empty_file_exists(tmpdir.join("generated/__init__.py"))
     dest_file = tmpdir.join("generated/resource_rc.py")
     _assert_path_exists(dest_file)
     assert dest_mod_time != dest_file.mtime()
@@ -216,6 +231,7 @@ def test_resource_generation_when_image_out_of_date(tmpdir):
     pyqt5ac.main(config=str(config))
 
     _assert_path_exists(tmpdir.join("generated"))
+    _assert_empty_file_exists(tmpdir.join("generated/__init__.py"))
     dest_file = tmpdir.join("generated/resource_rc.py")
     _assert_path_exists(dest_file)
     assert dest_mod_time != dest_file.mtime()
@@ -249,6 +265,7 @@ def test_ui_generation_when_invalid(tmpdir):
     pyqt5ac.main(config=str(config))
 
     assert tmpdir.join("generated").check()
+    _assert_empty_file_exists(tmpdir.join("generated/__init__.py"))
     # TODO generated file should not exist and pyqt5ac should fail
     assert tmpdir.join("generated/main_ui.py").check()
 
@@ -261,4 +278,32 @@ def test_ui_generation_with_variables(tmpdir):
     pyqt5ac.main(config=str(config), uicOptions="-d")
 
     _assert_path_exists(tmpdir.join("generated"))
+    _assert_empty_file_exists(tmpdir.join("generated/__init__.py"))
     _assert_path_exists(tmpdir.join("generated/main_ui.py"))
+
+
+def test_init_is_untouched(tmpdir):
+    config = _write_config_file(tmpdir)
+    ui_file = tmpdir.mkdir("gui").join("main.ui")
+    _write_ui_file(ui_file)
+    init_file = tmpdir.mkdir("generated").join("__init__.py")
+    init_file.write("test")
+
+    pyqt5ac.main(config=str(config))
+
+    _assert_path_exists(tmpdir.join("generated"))
+    _assert_path_exists(tmpdir.join("generated/main_ui.py"))
+    _assert_path_exists(tmpdir.join("generated/__init__.py"))
+    assert "test" == init_file.read()
+
+
+def test_dont_check_for_init(tmpdir):
+    config = _write_config_file(tmpdir)
+    ui_file = tmpdir.mkdir("gui").join("main.ui")
+    _write_ui_file(ui_file)
+
+    pyqt5ac.main(config=str(config), initPackage=False)
+
+    _assert_path_exists(tmpdir.join("generated"))
+    _assert_path_exists(tmpdir.join("generated/main_ui.py"))
+    _assert_path_does_not_exist(tmpdir.join("generated/__init__.py"))

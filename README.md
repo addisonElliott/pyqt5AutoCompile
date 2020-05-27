@@ -1,5 +1,4 @@
-[![pipeline status](https://gitlab.com/zkovari/pyqt5ac/badges/master/pipeline.svg)](https://gitlab.com/zkovari/pyqt5ac/-/commits/master)
-[![coverage report](https://gitlab.com/zkovari/pyqt5ac/badges/master/coverage.svg)](https://gitlab.com/zkovari/pyqt5ac/-/commits/master)
+[![CI](https://github.com/addisonElliott/pyqt5ac/workflows/CI/badge.svg)](https://github.com/addisonElliott/pyqt5ac/actions)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyqt5ac.svg)](https://pypi.org/project/pyqt5ac/)
 [![PyPI](https://img.shields.io/pypi/v/pyqt5ac.svg)](https://pypi.org/project/pyqt5ac/)
 [![PyPI - License](https://img.shields.io/pypi/l/pyqt5ac.svg)](https://github.com/addisonElliott/pyqt5ac/blob/master/LICENSE)
@@ -22,6 +21,7 @@
 
 PyQt5 Auto Compiler (pyqt5ac)
 =============================
+
 pyqt5ac is a Python package for automatically compiling Qt's UI and QRC files into Python files.
 
 In PyQt5, [Qt Designer](https://www.qt.io/) is the application used to create a GUI using a drag-and-drop interface. This interface is stored in a *.ui* file and any resources such as images or icons are stored in a *.qrc* file.
@@ -33,10 +33,12 @@ These two filetypes must be compiled into Python files before they can be used i
 The downside to the first method is that it can be a tedious endeavor to compile the files, especially when one is faced with a larger project with many of these files that need to be compiled. Although the second method eliminates the tediousness of compilation, these files are compiled **every** time you run your script, regardless of if anything has been changed. This can cause a hit in performance and take longer to startup your script.
 
 ### Enter **pyqt5ac**!
+
 pyqt5ac provides a command-line interface (CLI) that searches through your files and automatically compiles any *.ui* or *.qrc* files. In addition, pyqt5ac can be called from your Python script. In both instances, **ui and resource files are only compiled if they have been updated**.
 
 Installing
 ==========
+
 pyqt5ac is currently available on [PyPi](https://pypi.python.org/pypi/pyqt5ac/). The simplest way to
 install alone is using ``pip`` at a command line
 
@@ -62,6 +64,7 @@ Getting Started
 
 Running from Command Line
 -------------------------
+
 If pyqt5ac is installed via pip, the command line interface can be called like any Unix based program in the terminal
 
     pyqt5ac [OPTIONS] [IOPATHS]...
@@ -74,19 +77,20 @@ The help file of the interface can be run as
 
 Running from Python Script
 --------------------------
+
 The following snippet of code below demonstrates how to call pyqt5ac from your Python script
 
 ```python
 import pyqt5ac
 
-if debug:
-    pyqt5ac.main(rccOptions='', uicOptions='--from-imports', force=False, config='',
-                 ioPaths=[['gui/*.ui', 'generated/%%FILENAME%%_ui.py'],
-                          ['resources/*.qrc', 'generated/%%FILENAME%%_rc.py']])
+pyqt5ac.main(rccOptions='', uicOptions='--from-imports', force=False, initPackage=True, config='',
+             ioPaths=[['gui/*.ui', 'generated/%%FILENAME%%_ui.py'],
+                     ['resources/*.qrc', 'generated/%%FILENAME%%_rc.py']])
 ```
 
 Configuration Options
 =====================
+
 All of the options that can be specified to pyqt5ac can also be placed in a configuration file (JSON or YAML). My recommendation is to use a configuration file to allow easy compilation of your software. For testing purposes, I would use the options in the command line interface to make get everything working and then transcribe that into a configuration file for repeated use.
 
 Whether running via the command line or from a script, the arguments and options that can be given are the same. The valid options are:
@@ -99,9 +103,11 @@ Whether running via the command line or from a script, the arguments and options
     * %%EXT%% - Extension excluding the period of the file (e.g. ui or qrc)
     * %%DIRNAME%% - Directory of the source file
 * **variables** - custom variables that can be used in the definition of the paths in **ioPaths**. For example, to limit the search of files to a specific directory, one can define a variable `BASEDIR` and then use it as `%%BASEDIR%%/gui/*.ui*`
+* **init_package** - If specified, an empty `__init__.py` file is also generated in every output directory if missing. Does not overwrite existing `__init__.py`. Default value is `True`.
 
 Example
 =======
+
 Take the following file structure as an example project where any UI and QRC files need to be compiled. Assume that pyuic5 and pyrcc5 are located in /usr/bin and that '--from-imports' is desired for the UIC compiler.
 
 ```
@@ -127,10 +133,11 @@ Take the following file structure as an example project where any UI and QRC fil
 |           `-- module.qrc
 ```
 
-The sections below demonstrate how to setup pyqt5ac to compile the necssary files given the file structure above.
+The sections below demonstrate how to setup pyqt5ac to compile the necessary files given the file structure above.
 
 Option 1: YAML Config File (Recommended)
 ---------------------------------------
+
 ```YAML
 ioPaths:
   -
@@ -147,6 +154,7 @@ ioPaths:
     - "%%DIRNAME%%/generated/%%FILENAME%%_rc.py"
 
 uic_options: --from-imports
+init_package: True
 force: False
 ```
 
@@ -164,6 +172,7 @@ pyqt5ac.main(config='config.yml')
 
 Option 2: JSON Config File (Deprecated)
 ---------------------------------------
+
 ```JSON
 {
   "ioPaths": [
@@ -174,6 +183,7 @@ Option 2: JSON Config File (Deprecated)
   ],
   "rcc_options": "",
   "uic_options": "--from-imports",
+  "init_package": true,
   "force": false
 }
 ```
@@ -192,10 +202,11 @@ pyqt5ac.main(config='config.yml')
 
 Option 3: Python Script
 -----------------------
+
 ```python
 import pyqt5ac
 
-pyqt5ac.main(uicOptions='--from-imports', force=False, ioPaths=[
+pyqt5ac.main(uicOptions='--from-imports', force=False, initPackage=True, ioPaths=[
         ['gui/*.ui', 'generated/%%FILENAME%%_ui.py'],
         ['resources/*.qrc', 'generated/%%FILENAME%%_rc.py'],
         ['modules/*/*.ui', '%%DIRNAME%%/generated/%%FILENAME%%_ui.py'],
@@ -205,12 +216,14 @@ pyqt5ac.main(uicOptions='--from-imports', force=False, ioPaths=[
 
 Option 4: Command Line
 ----------------------
+
 ```bash
 pyqt5ac --uic_options "--from-imports" gui/*.ui generated/%%FILENAME%%_ui.py resources/*.qrc generated/%%FILENAME%%_rc.py modules/*/*.ui %%DIRNAME%%/generated/%%FILENAME%%_ui.py modules/*/resources/*.qrc %%DIRNAME%%/generated/%%FILENAME%%_rc.py
 ```
 
 Resulting File Structure
 ------------------------
+
 ```
 |-- gui
 |   |-- mainWindow.ui
@@ -222,6 +235,7 @@ Resulting File Structure
 |   |-- app.qrc
 |   `-- style.qrc
 |-- generated
+|   |-- __init__.py_
 |   |-- mainWindow_ui.py
 |   |-- addDataDialog_ui.py
 |   |-- saveDataDialog_ui.py
@@ -229,18 +243,18 @@ Resulting File Structure
 |   `-- style_rc.py
 |-- modules
 |   |-- welcome
-|       |-- module.ui
-|       |-- resources
-|           |-- images
-|           `-- module.qrc
-|       `-- generated
-|           |-- module_ui.py
-|           `-- module_rc.py
+|   |   |-- module.ui
+|   |   |-- resources
+|   |   |   |-- images
+|   |   |   `-- module.qrc
+|   |   `-- generated
+|   |       |-- module_ui.py
+|   |       `-- module_rc.py
 |   `-- dataProbe
 |       |-- module.ui
 |       |-- resources
-|           |-- images
-|           `-- module.qrc
+|       |   |-- images
+|       |   `-- module.qrc
 |       `-- generated
 |           |-- module_ui.py
 |           `-- module_rc.py
@@ -248,7 +262,8 @@ Resulting File Structure
 
 Support
 =======
-Issues and pull requests are encouraged! 
+
+Issues and pull requests are encouraged!
 
 Bugs can be submitted through the [issue tracker](https://github.com/addisonElliott/pyqt5ac/issues).
 
@@ -256,4 +271,5 @@ Pull requests are welcome too!
 
 License
 =================
+
 pyqt5ac has an [MIT-based license](https://github.com/addisonElliott/pyqt5ac/blob/master/LICENSE).

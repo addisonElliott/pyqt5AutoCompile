@@ -8,7 +8,7 @@ import sys
 import click
 import yaml
 
-__version__ = '1.1.0'
+__version__ = '1.2.1'
 
 
 # Takes information about command and creates an argument list from it
@@ -72,9 +72,12 @@ def _isOutdated(src, dst, isQRCFile):
 @click.option('--config', '-c', default='', type=click.Path(exists=True, file_okay=True, dir_okay=False),
               help='JSON or YAML file containing the configuration parameters')
 @click.option('--force', default=False, is_flag=True, help='Compile all files regardless of last modification time')
+@click.option('--init-package', 'initPackage', default=True, is_flag=True,
+              help='Ensures that the folder containing the generated files is a Python subpackage '
+                   '(i.e. it contains a file called __init__.py')
 @click.argument('iopaths', nargs=-1, required=False)
 @click.version_option(__version__)
-def cli(rccOptions, uicOptions, force, config, iopaths=()):
+def cli(rccOptions, uicOptions, force, config, iopaths=(), initPackage=True):
     """Compile PyQt5 UI/QRC files into Python
 
     IOPATHS argument is a space delineated pair of glob expressions that specify the source files to compile as the
@@ -122,7 +125,8 @@ def cli(rccOptions, uicOptions, force, config, iopaths=()):
     # second column the destination file expression.
     ioPaths = list(zip(iopaths[::2], iopaths[1::2]))
 
-    main(rccOptions, uicOptions, force, config, ioPaths)
+    main(rccOptions=rccOptions, uicOptions=uicOptions, force=force, config=config, ioPaths=ioPaths,
+         initPackage=initPackage)
 
 
 def replaceVariables(variables_definition, string_with_variables):
@@ -139,7 +143,7 @@ def replaceVariables(variables_definition, string_with_variables):
     return string_with_variables
 
 
-def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), variables=None):
+def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), variables=None, initPackage=True):
     if config:
         with open(config, 'r') as fh:
             if config.endswith('.yml'):
@@ -158,6 +162,7 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), varia
             force = configData.get('force', force)
             ioPaths = configData.get('ioPaths', ioPaths)
             variables = configData.get('variables', variables)
+            initPackage = configData.get('init_package', initPackage)
 
     # Validate the custom variables
     if variables is None:
@@ -214,7 +219,13 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), varia
                 continue
 
             # Create all directories to the destination filename and do nothing if they already exist
-            os.makedirs(os.path.dirname(destFilename), exist_ok=True)
+            dest_file_directory = os.path.dirname(destFilename)
+            os.makedirs(dest_file_directory, exist_ok=True)
+
+            # Ensure __init__.py is present and, if it's missing, generate it
+            if initPackage:
+                with open(os.path.join(dest_file_directory, "__init__.py"), 'a'):
+                    pass
 
             # If we are force compiling everything or the source file is outdated, then compile, otherwise skip!
             if force or _isOutdated(sourceFilename, destFilename, isQRCFile):
