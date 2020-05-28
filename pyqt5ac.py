@@ -195,6 +195,9 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), varia
         # Replace instances of the variables with the actual values of the available variables
         sourceFileExpr = replaceVariables(variables, sourceFileExpr)
 
+        # Retrieve the absolute path to the source files
+        sourceFileExpr = resolvePath(sourceFileExpr, (os.path.dirname(config) or os.getcwd()))
+
         # Find files that match the source filename expression given
         for sourceFilename in glob.glob(sourceFileExpr, recursive=True):
             # If the filename does not exist, not sure why this would ever occur, but show a warning
@@ -219,9 +222,8 @@ def main(rccOptions='', uicOptions='', force=False, config='', ioPaths=(), varia
             variables.update({'FILENAME': filename, 'EXT': ext[1:], 'DIRNAME': dirname})
             destFilename = replaceVariables(variables, destFileExpr)
 
-            # Retrieve the absolute path to the source and destination files
-            sourceFilename = resolvePath(sourceFilename, (config or os.getcwd()))
-            destFilename = resolvePath(destFilename, (config or os.getcwd()))
+            # Retrieve the absolute path to the destination files
+            destFilename = resolvePath(destFilename, (os.path.dirname(config) or os.getcwd()))
 
             if ext == '.ui':
                 isQRCFile = False
