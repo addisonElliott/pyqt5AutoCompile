@@ -149,12 +149,15 @@ def resolvePath(path: str, reference_path: str) -> str:
     Meaningful reference values for the caller might be the configuration file path, the script's path or the current
     working directory.
     :param path: path to resolve.
-    :param reference_path: path to be used as a reference to servole absolute paths
+    :param reference_path: path to be used as a reference to resolve absolute paths
     :return: an absolute path corresponding to the relative path passed in input if it was relative, or the unchanged
     input if it was an absolute path.
+    :raises: ValueError if the reference path is not absolute
     """
     if not os.path.isabs(path):
-        return os.path.join(os.path.dirname(os.path.realpath(reference_path)), path)
+        if not os.path.isabs(reference_path):
+            raise ValueError("The reference path must be absolute.")
+        return os.path.join(reference_path, path)
     return path
 
 

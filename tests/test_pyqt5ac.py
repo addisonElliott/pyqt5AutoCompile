@@ -307,3 +307,17 @@ def test_dont_check_for_init(tmpdir):
     _assert_path_exists(tmpdir.join("generated"))
     _assert_path_exists(tmpdir.join("generated/main_ui.py"))
     _assert_path_does_not_exist(tmpdir.join("generated/__init__.py"))
+
+
+def test_can_find_files_if_called_from_another_directory(tmpdir):
+    config = _write_config_file(tmpdir)
+    ui_file = tmpdir.mkdir("gui").join("main.ui")
+    _write_ui_file(ui_file)
+
+    tmpdir.mkdir("another_directory")
+    os.chdir(tmpdir.join("another_directory"))
+    pyqt5ac.main(config=str(config), initPackage=False)
+
+    _assert_path_exists(tmpdir.join("generated"))
+    _assert_path_exists(tmpdir.join("generated/main_ui.py"))
+    _assert_path_does_not_exist(tmpdir.join("generated/__init__.py"))
