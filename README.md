@@ -105,6 +105,8 @@ Whether running via the command line or from a script, the arguments and options
 * **variables** - custom variables that can be used in the definition of the paths in **ioPaths**. For example, to limit the search of files to a specific directory, one can define a variable `BASEDIR` and then use it as `%%BASEDIR%%/gui/*.ui*`
 * **init_package** - If specified, an empty `__init__.py` file is also generated in every output directory if missing. Does not overwrite existing `__init__.py`. Default value is `True`.
 
+Note that all relative paths are resolved from the configuration file location, if given through a config file, or from the current working directory otherwise.
+
 Example
 =======
 
