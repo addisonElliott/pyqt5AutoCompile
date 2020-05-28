@@ -309,15 +309,38 @@ def test_dont_check_for_init(tmpdir):
     _assert_path_does_not_exist(tmpdir.join("generated/__init__.py"))
 
 
-def test_can_find_files_if_called_from_another_directory(tmpdir):
+def test_can_find_files_if_called_from_another_directory_using_config_file(tmpdir):
     config = _write_config_file(tmpdir)
     ui_file = tmpdir.mkdir("gui").join("main.ui")
     _write_ui_file(ui_file)
-
     tmpdir.mkdir("another_directory")
-    os.chdir(tmpdir.join("another_directory"))
-    pyqt5ac.main(config=str(config), initPackage=False)
+    os.chdir(str(tmpdir.join("another_directory")))  # Python3.5 compatibility
+
+    pyqt5ac.main(config=str(config))
 
     _assert_path_exists(tmpdir.join("generated"))
     _assert_path_exists(tmpdir.join("generated/main_ui.py"))
-    _assert_path_does_not_exist(tmpdir.join("generated/__init__.py"))
+
+
+def test_can_find_files_if_called_from_another_directory_without_config_file(tmpdir):
+    ui_file = tmpdir.mkdir("another_directory").mkdir("gui").join("main.ui")
+    _write_ui_file(ui_file)
+    os.chdir(str(tmpdir.join("another_directory")))  # Python3.5 compatibility
+
+    pyqt5ac.main(uicOptions='--from-imports', force=False, initPackage=True, ioPaths=[
+        ['gui/*.ui', 'generated/%%FILENAME%%_ui.py'],
+        ['resources/*.qrc', 'generated/%%FILENAME%%_rc.py'],
+        ['modules/*/*.ui', '%%DIRNAME%%/generated/%%FILENAME%%_ui.py'],
+        ['modules/*/resources/*.qrc', '%%DIRNAME%%/generated/%%FILENAME%%_rc.py']
+    ])
+
+    _assert_path_does_not_exist(tmpdir.join("generated"))
+    _assert_path_does_not_exist(tmpdir.join("generated/main_ui.py"))
+
+    _assert_path_exists(tmpdir.join("another_directory").join("generated"))
+    _assert_path_exists(tmpdir.join("another_directory").join("generated/main_ui.py"))
+
+
+
+
+
